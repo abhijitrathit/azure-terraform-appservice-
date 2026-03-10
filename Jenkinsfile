@@ -10,7 +10,7 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 git branch: 'main',
-                url: 'https://github.com/YOUR_REPO/azure-terraform-appservice.git'
+                url: 'https://github.com/abhijitrathit/azure-terraform-appservice-.git'
             }
         }
 
