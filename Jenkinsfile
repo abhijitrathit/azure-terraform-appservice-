@@ -4,8 +4,8 @@ pipeline {
     parameters {
         string(
             name: 'TFVARS_REPO_URL',
-            defaultValue: 'https://github.com/your-org/terraform-tfvars-repo.git',
-            description: 'Git repository URL containing terraform.tfvars'
+            defaultValue: 'https://github.com/your-org/tfvars.git',
+            description: 'Git repo containing terraform.tfvars'
         )
     }
 
@@ -25,7 +25,7 @@ pipeline {
             }
         }
 
-        stage('Clone tfvars Repository') {
+        stage('Clone tfvars Repo') {
             steps {
                 sh '''
                 rm -rf tfvars-repo
@@ -34,27 +34,37 @@ pipeline {
             }
         }
 
+        stage('Create Separate Workspace') {
+            steps {
+                sh '''
+                mkdir -p deployments/${BUILD_NUMBER}
+                cp -r *.tf deployments/${BUILD_NUMBER}/
+                cp tfvars-repo/terraform.tfvars deployments/${BUILD_NUMBER}/
+                '''
+            }
+        }
+
         stage('Terraform Init') {
             steps {
-                sh 'terraform init'
+                dir("deployments/${BUILD_NUMBER}") {
+                    sh 'terraform init'
+                }
             }
         }
 
         stage('Terraform Plan') {
             steps {
-                sh '''
-                terraform plan \
-                -var-file=tfvars-repo/terraform.tfvars
-                '''
+                dir("deployments/${BUILD_NUMBER}") {
+                    sh 'terraform plan -var-file=terraform.tfvars'
+                }
             }
         }
 
         stage('Terraform Apply') {
             steps {
-                sh '''
-                terraform apply -auto-approve \
-                -var-file=tfvars-repo/terraform.tfvars
-                '''
+                dir("deployments/${BUILD_NUMBER}") {
+                    sh 'terraform apply -auto-approve -var-file=terraform.tfvars'
+                }
             }
         }
     }
