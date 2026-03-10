@@ -1,8 +1,8 @@
 resource_group_name = "my-rg"
 location            = "Central India"
 
-service_plan_name   = "abhijit-appservice-plan"
-app_name            = "abhijit-tomcat-app123"
+service_plan_name   = "abhijit-appservice-plan2"
+app_name            = "abhijit-tomcat-app1234"
 
 sku_name            = "B1"
 
