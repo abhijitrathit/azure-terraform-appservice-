@@ -1,4 +1,4 @@
-resource_group_name = "my-rg"
+resource_group_name = "my-rg2"
 location            = "Central India"
 
 service_plan_name   = "abhijit-appservice-plan2"
