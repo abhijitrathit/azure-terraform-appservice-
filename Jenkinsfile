@@ -2,8 +2,11 @@ pipeline {
     agent any
 
     environment {
-        AZURE_SUBSCRIPTION = "9a402ea6-2da3-434e-be89-731319a89f85"
-    }
+    ARM_CLIENT_ID       = '86c009a0-3f04-4bde-8a63-100d705f2a4f'
+    ARM_CLIENT_SECRET   = '3gE8Q~M6xqmDPt5uMxLsuF7linceW~psGrMtXdmQ'
+    ARM_SUBSCRIPTION_ID = '9a402ea6-2da3-434e-be89-731319a89f85'
+    ARM_TENANT_ID       = '2ce85261-166c-4a0a-a748-a1644a2e2421'
+}
 
     stages {
 
@@ -30,16 +33,6 @@ pipeline {
             steps {
                 sh 'terraform apply -auto-approve'
             }
-        }
-
-    }
-
-    post {
-        success {
-            echo 'Azure Infrastructure Deployed Successfully'
-        }
-        failure {
-            echo 'Deployment Failed'
         }
     }
 }
