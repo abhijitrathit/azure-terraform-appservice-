@@ -10,10 +10,7 @@ pipeline {
     }
 
     environment {
-        ARM_CLIENT_ID       = credentials('azure-client-id')
-        ARM_CLIENT_SECRET   = credentials('azure-client-secret')
-        ARM_SUBSCRIPTION_ID = credentials('azure-subscription-id')
-        ARM_TENANT_ID       = credentials('azure-tenant-id')
+        AZURE_CREDENTIALS = 'jenkins-vm-manager'
     }
 
     stages {
@@ -22,6 +19,19 @@ pipeline {
             steps {
                 git branch: 'main',
                 url: 'https://github.com/abhijitrathit/azure-terraform-appservice-.git'
+            }
+        }
+
+        stage('Azure Login') {
+            steps {
+                withCredentials([azureServicePrincipal('jenkins-vm-manager')]) {
+                    sh '''
+                    az login --service-principal \
+                      -u $AZURE_CLIENT_ID \
+                      -p $AZURE_CLIENT_SECRET \
+                      --tenant $AZURE_TENANT_ID
+                    '''
+                }
             }
         }
 
