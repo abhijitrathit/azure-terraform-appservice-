@@ -1,32 +1,34 @@
 pipeline {
     agent any
 
-    parameters {
-        string(
-            name: 'TFVARS_REPO_URL',
-            defaultValue: 'https://github.com/your-org/tfvars.git',
-            description: 'Git repo containing terraform.tfvars'
-        )
-    }
-
     environment {
-       
+        TERRAFORM_REPO_URL = credentials('terraform-repo-url')
+        TFVARS_REPO_URL    = credentials('tfvars-repo-url')
+        GIT_CREDS          = 'git-creds'
+    }
 
     stages {
 
         stage('Checkout Terraform Code') {
             steps {
                 git branch: 'main',
-                url: 'https://github.com/abhijitrathit/azure-terraform-appservice-.git'
+                credentialsId: "${GIT_CREDS}",
+                url: "${TERRAFORM_REPO_URL}"
             }
         }
 
         stage('Clone tfvars Repo') {
             steps {
-                sh '''
-                rm -rf tfvars-repo
-                git clone ${TFVARS_REPO_URL} tfvars-repo
-                '''
+                withCredentials([usernamePassword(
+                    credentialsId: "${GIT_CREDS}",
+                    usernameVariable: 'GIT_USER',
+                    passwordVariable: 'GIT_PASS'
+                )]) {
+                    sh '''
+                    rm -rf tfvars-repo
+                    git clone https://${GIT_USER}:${GIT_PASS}@${TFVARS_REPO_URL.replace("https://","")} tfvars-repo
+                    '''
+                }
             }
         }
 
