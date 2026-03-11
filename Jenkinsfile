@@ -1,10 +1,12 @@
 pipeline {
     agent any
 
-    environment {
-        TERRAFORM_REPO_URL = credentials('terraform-repo-url')
-        TFVARS_REPO_URL    = credentials('tfvars-repo-url')
-        GIT_CREDS          = 'git-creds'
+    parameters {
+        string(
+            name: 'TFVARS_REPO_URL',
+            defaultValue: '',
+            description: 'Enter Git repository URL containing terraform.tfvars'
+        )
     }
 
     stages {
@@ -12,23 +14,16 @@ pipeline {
         stage('Checkout Terraform Code') {
             steps {
                 git branch: 'main',
-                credentialsId: "${GIT_CREDS}",
-                url: "${TERRAFORM_REPO_URL}"
+                url: 'https://github.com/abhijitrathit/azure-terraform-appservice-.git'
             }
         }
 
         stage('Clone tfvars Repo') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: "${GIT_CREDS}",
-                    usernameVariable: 'GIT_USER',
-                    passwordVariable: 'GIT_PASS'
-                )]) {
-                    sh '''
-                    rm -rf tfvars-repo
-                    git clone https://${GIT_USER}:${GIT_PASS}@${TFVARS_REPO_URL.replace("https://","")} tfvars-repo
-                    '''
-                }
+                sh '''
+                rm -rf tfvars-repo
+                git clone ${TFVARS_REPO_URL} tfvars-repo
+                '''
             }
         }
 
@@ -36,6 +31,7 @@ pipeline {
             steps {
                 sh '''
                 mkdir -p deployments/${BUILD_NUMBER}
+
                 cp -r *.tf deployments/${BUILD_NUMBER}/
                 cp tfvars-repo/terraform.tfvars deployments/${BUILD_NUMBER}/
                 '''
@@ -58,6 +54,12 @@ pipeline {
             }
         }
 
+        stage('Approval Before Apply') {
+            steps {
+                input message: "Approve Terraform Apply?"
+            }
+        }
+
         stage('Terraform Apply') {
             steps {
                 dir("deployments/${BUILD_NUMBER}") {
@@ -65,5 +67,6 @@ pipeline {
                 }
             }
         }
+
     }
 }
